@@ -3,21 +3,16 @@
 Differential Equation Solution Checker 
 
 For now it works on Windows OS only
-
-What is it:
-
-  An input file is a LaTeX source file with .tex extension, containing ODEs (Ordinary Differential Equations) and corresponding solutions.
   
-  The application reads the input file. 
+How it works:
+  1. User tells the app where the pdflatex.exe and input file are. The the user hits "Run" button.
+  2. The app verifies the input file. The input file must be compilable .tex file.
+  3. App opens input file, creates and initializes output file.
+  4. The input file is read line by line. Firstly a function and variable symbol identified (see sample_input.tex).  
+  5. ODE and solution are read as str objects and then converted to sympy objects.
+  6. Function symbol substituted with function object.
+  7. Check wether the equation is a solution of the ODE and output printed to the output tex file. If the equation is not a solution then the correct solution is printed.
+  8. If no errors occured, pdf file is made out of output tex file and default pdf viewer launched to show the pdf.
   
-  Then it uses latex2sympy to convert LaTeX expressions to sympy expressions.
-  
-  Then the applications creates an output file as a LaTeX source file.
-  
-  Then it checks wether the given equation is a solution for the ODE and prints result to the output file. If the given solution is incorrect, the application solves the ODE and prints the correct solution.
-  
-  Then it uses "pdflatex.exe" to create the .pdf file out of .tex file containing results.
-  
-  Finally it opens .pdf file with default .pdf viewer.
    
-  For an example of input file see "sample_input.tex" file.
+  For an example of input file see "sample_input.tex" file in "test_input_files" directory.
