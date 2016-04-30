@@ -2,7 +2,18 @@
 # main.py; 
 # 2016-04-10 16:51; 
 
+#apr 24
+## 17:37 pdflatex subprocess tex file error check testing
+## 20:34 . Added input file verification, 
+###        diffrent output filenames support,
+###        log files deletion, changed function names
+#apr 25
+## introduced working directory
+## 12:18 builded Realese
+
 import sys
+import subprocess
+from pathlib import Path, PureWindowsPath
 from PyQt4 import QtCore, QtGui 
 from UI_MainWindow import *
 from UI_AboutWidget import *
@@ -25,14 +36,15 @@ class Start(QtGui.QMainWindow):
 
         QtCore.QObject.connect(self.ui.run_button,QtCore.SIGNAL("clicked()"),    self.Run )
         QtCore.QObject.connect(self.ui.about_button,QtCore.SIGNAL("clicked()"),    self.About )
-        QtCore.QObject.connect(self.ui.select_input_button,QtCore.SIGNAL("clicked()"),    self.SelectInput )
-        QtCore.QObject.connect(self.ui.select_pdflatex_button,QtCore.SIGNAL("clicked()"),    self.SelectPdflatex )
+        QtCore.QObject.connect(self.ui.select_input_button,QtCore.SIGNAL("clicked()"),    self.SelectInputFile )
+        QtCore.QObject.connect(self.ui.select_pdflatex_button,QtCore.SIGNAL("clicked()"),    self.SelectPdflatexFile )
 
         self.input_file_path    = ''
         self.pdflatex_file_path = ''
         self.fo_tex = 0
         self.tex_file_path = ''
-        self.tex_filename = 'results.tex'
+        self.tex_filename = ''
+        self.working_dir = ''
 
 
     def AboutClose(self):
@@ -47,13 +59,13 @@ class Start(QtGui.QMainWindow):
         self.about_widget.show()
     #
 
-    def isBadFile(self,name): #check extension
-        ending = name[len(name)-4:]
-        if ending != '.txt' and ending != '.tex':
+    def isNot_TeX_File(self,name): #check extension
+        ending = name[-4:]
+        if ending != '.tex':
             return True
         return False
 
-    def SelectInput(self):
+    def SelectInputFile(self):
 
         fd = QtGui.QFileDialog(self)
 
@@ -61,28 +73,43 @@ class Start(QtGui.QMainWindow):
 
         if self.input_file_path == '' : return
 
-        if self.isBadFile(self.input_file_path):
+        if self.isNot_TeX_File(self.input_file_path):
             self.ui.input_file_field.setText(RedText('> Error: Unsupported file format'))
             self.input_file_path = ''
             return
 
         self.ui.input_file_field.setText(self.input_file_path)
-
-    def isNotPdflatex(self,name):
+        
+        print('> got input file path:',self.input_file_path)
+        
+        
+        
+        self.tex_filename = PureWindowsPath(self.input_file_path).name # Potential Error
+        self.tex_filename = self.tex_filename[:-4]+'_results.tex'
+        
+        self.working_dir = str( PureWindowsPath(self.input_file_path).parents[0] )
+        print('> working dir set to :', self.working_dir)
+        print('> tex file name set to :', self.tex_filename)
+        
+        
+    def isNotPdflatexFile(self,name):
         ending = name[len(name)-12:]
         if ending != 'pdflatex.exe' :
             return True
         return False
 
-    def SelectPdflatex(self):
+    def SelectPdflatexFile(self):
 
         fd = QtGui.QFileDialog(self)
 
         self.pdflatex_file_path = fd.getOpenFileName()
+        
+        print('> selected file:', self.pdflatex_file_path)
+        
 
         if self.pdflatex_file_path == '' : return
 
-        if self.isNotPdflatex(self.pdflatex_file_path):
+        if self.isNotPdflatexFile(self.pdflatex_file_path):
             self.ui.pdflatex_field.setText(RedText('> Error: pdflatex.exe expected'))
             self.pdflatex_file_path = ''
             return
@@ -95,15 +122,16 @@ class Start(QtGui.QMainWindow):
         print ('\n$$\n',sympy.latex(expr),'\n$$\n',file=self.fo_tex)
         
     def InitiateTexFile(self):
-        from pathlib import Path
+                
         try:
-            cur_dir       = Path('.')
+            #cur_dir       = Path('.')
+            cur_dir = Path(self.working_dir)
+            #print('> current directory is set to: ',cur_dir)
             self.tex_file_path = str(cur_dir/self.tex_filename)
-            self.tex_file_path = str(cur_dir/self.tex_filename)
-            self.fo_tex   = open(self.tex_file_path,'w')
+            self.fo_tex   = open(self.tex_file_path,'w') #TODO close ??
         except OSError:
             self.ui.input_file_field.setText(Redtext('.tex file cannot be created'))
-            return False
+            return True
         initial_string = '''
         
         \documentclass{article}
@@ -117,47 +145,62 @@ class Start(QtGui.QMainWindow):
         #        \\usepackage[russian]{babel}
         self.Print(initial_string)
         print('> TeX file has been created')
-        return True
+        return False
 
     def RunPdflatexAndOpenPdf(self):
-        import subprocess
+                
         print ('> Starting pdflatex.exe')
-        args = [self.pdflatex_file_path,
+        args = [ self.pdflatex_file_path,
                 '-interaction=batchmode',
                 '-halt-on-error',
                 '-no-shell-escape',
                 self.tex_file_path
         ]
-        tex_process = subprocess.call(args)
-        print ('> pdflatex.exe exited')
-        pdf_filename = self.tex_filename.replace('.tex','.pdf')
+        tex_process = subprocess.call(args,cwd=self.working_dir)
+        
+        print('> pdflatex process return code : ', tex_process)
+        
+        (Path(self.working_dir)/(self.tex_filename[:-4]+'.log')).unlink()
+        (Path(self.working_dir)/(self.tex_filename[:-4]+'.aux')).unlink()
+        
+        print ('> .aux and .log files deleted')
+        
+        print('> Openning pdf file...')
+        pdf_filename = str ( Path(self.working_dir)/(self.tex_filename.replace('.tex','.pdf')) )
         import os
         os.system("start "+pdf_filename )
 
     def FilesArePresent(self):
-        if self.isNotPdflatex(self.pdflatex_file_path):
+        if self.isNotPdflatexFile(self.pdflatex_file_path):
             self.ui.pdflatex_field.setText(RedText('select file'))
             return False
-        if self.isBadFile(self.input_file_path):
+        if self.isNot_TeX_File(self.input_file_path):
             self.ui.input_file_field.setText(RedText('select file'))
             return False
         return True
     def CheckODEs(self,fo):
         ''' read text file fo, solve ODEs, print results, close file '''
         funvar = FindFuncAndVar(fo)
-        print ('> function and variable has been determined')
+        
         if  (funvar[0] == '' or funvar[1] == '') :
-            self.ui.input_file_field.setText(RedText('Error: Function or Variable is not specified'))
-            return
+            self.ui.input_file_field.setText(RedText('ERROR: Function or Variable is not specified'))
+            print('> ERROR: Function or Variable is not specified')
+            return True
+            
+        print ('> function and variable defined')
 
         # reset fo
         fo.close()
         fo = open(self.input_file_path,'r')
         #
-        print('> Parsing input file')
+        print('> input file reopened')
+        print('> Parsing input file ...')
         for i,data in enumerate(ParseTex(fo)):
 
+            print('>> iteration :',i )
+            print('>> data :',data)
             eqs  =  LatexToSympy(data+funvar)
+            print('>> Checking solution ...')
             res  =  Check(eqs[0],eqs[1])
 
             self.Print('ODE number: '+str(i+1))
@@ -174,8 +217,10 @@ class Start(QtGui.QMainWindow):
                 self.PPrint(eqs[1])
                 self.Print ('CORRECT') # GREEN letters
                 self.Print ('')
+            
         fo.close()
-        
+        return False
+    '''        
     def ShowProcessingMessage(self):
         
         
@@ -186,38 +231,76 @@ class Start(QtGui.QMainWindow):
     #
     def HideProcessingMessage(self):
         self.proc_mes.hide()
+    '''        
+    def VerifyInputFile(self):
+      
+        print('> Verifying input file...')
+        args = [self.pdflatex_file_path,
+        '-interaction=batchmode',
+        '-halt-on-error',
+        '-no-shell-escape',
+        '-draftmode',
+#        '-quiet',
+        self.input_file_path
+        ]
+
+        tex_process = subprocess.call(args,cwd=self.working_dir)
+        
+        print('> pdflatex process return code : ', tex_process)
+        
+        Path(self.input_file_path[:-4]+'.aux').unlink()
+
+        if tex_process != 0 :
+            return True # error occured
+        else:    
+            Path(self.input_file_path[:-4]+'.log').unlink()
+            
+        return False # no error
+        
     def Run(self):
 	
         #self.ShowProcessingMessage()
 		
-        print ( '> Running')
+        print ( '> RUNNING ...')
          
-        if not self.FilesArePresent(): return
+        if not self.FilesArePresent(): 
+            print('> ERROR : select files')
+            return
         
+        
+        error_occured = self.VerifyInputFile()
+        if error_occured :
+            print ('> ERROR: cannot compile the input file')
+            self.ui.input_file_field.setText(RedText('ERROR: See .log file for details'))
+            #TODO
+            # ErrorMessage # look at log file
+            return
+            
+            
         # open input file
         try:
             fo = open(self.input_file_path,'r')
         except (FileNotFoundError, NameError ) as e:
             self.ui.input_file_field.setText(RedText('cannot open file'))
+            print('> ERROR: cannot open file')
             return
         #
         
+        
         # initiate tex file	
-        ret_code = self.InitiateTexFile()
-        if ret_code == False:
+        error_occured = self.InitiateTexFile()
+        if error_occured :
             self.ui.input_file_field.setText(RedText('cannot create TeX file'))
             self.ui.pdflatex_field.setText(RedText('cannot create TeX file'))
+            print('> ERROR: cannot create TeX file')
         #
-        '''
-        # Print
-        self.Print('File:')
-        self.Print(self.input_file_path)
-        self.Print('')
-        #
-        '''
-		
-        self.CheckODEs(fo) # fo will be closed there
-       
+       		
+        error_occured = self.CheckODEs(fo) # fo will be closed there
+        if error_occured :
+            print ('> ODE checker ERROR')
+            #TODO
+            # ErrorMessage # look at log file
+            return
         
         self.Print('\end{document}')
         self.fo_tex.close()
@@ -230,7 +313,7 @@ class Start(QtGui.QMainWindow):
 
 
 if __name__=='__main__':
-
+    print('> Launching GUI ...')
     app = QtGui.QApplication(sys.argv)
     myapp = Start()
     myapp.show()

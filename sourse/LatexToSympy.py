@@ -24,10 +24,11 @@ def SimpleIdentify( ode , sol , func, var ):
     sol = sol.subs(Symbol('\\pi'),pi)
     ode = ode.subs(Symbol('\\pi'),pi)
 
+    print('>> function and variable symbols redefined')
     return (ode,sol)
 
 
-def ProcessData(data):
+def LatexToSympy(data):
 
     # str list[4] data
 
@@ -37,7 +38,7 @@ def ProcessData(data):
     var  = data[3]
 
     #Print_data_before_identification(ode,sol)
-
+    print('>> latex translated to sympy')
     return SimpleIdentify(ode ,sol, func, var)
     #id_ret = identify_symbols(ode, sol) TODO
 

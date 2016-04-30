@@ -90,7 +90,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "ODE Checker v.15a16", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "ODE Checker v.25a16", None))
         self.label.setText(_translate("MainWindow", "pdflatex", None))
         self.select_pdflatex_button.setText(_translate("MainWindow", "S", None))
         self.label_2.setText(_translate("MainWindow", "Input file", None))

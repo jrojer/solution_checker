@@ -2,6 +2,9 @@
 # ParseTex.py; 
 # 2016-03-31 18:02; 
 
+
+''' takes file object and retrieves data '''
+
 def FindFuncAndVar(fo):
 
     function = ''
