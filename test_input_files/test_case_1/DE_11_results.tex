@@ -1,0 +1,107 @@
+
+        
+        \documentclass{article}
+        \usepackage[utf8]{inputenc}
+        \usepackage{amsthm}
+        \usepackage{amsmath}
+
+        \begin{document}
+
+        
+ODE number: 1
+
+$$
+ dx x y{\left (x \right )} + dx \left(x + 1\right) \frac{d}{d x} y{\left (x \right )} = 0 
+$$
+
+Solution:
+
+$$
+ y{\left (x \right )} = C \left(x + 1\right) e^{- x} 
+$$
+
+CORRECT
+
+ODE number: 2
+
+$$
+ x \frac{d}{d x} y{\left (x \right )} - 2 y{\left (x \right )} = b x^{3} y^{2}{\left (x \right )} 
+$$
+
+Solution:
+
+$$
+ y{\left (x \right )} = \frac{5 x^{2}}{C - b x^{5}} 
+$$
+
+CORRECT
+
+ODE number: 3
+
+$$
+ dx x y{\left (x \right )} + dx \left(x + 1\right) \frac{d}{d x} y{\left (x \right )} = 0 
+$$
+
+Solution:
+
+$$
+ y{\left (x \right )} = C \left(x + 1\right) e^{- x} 
+$$
+
+CORRECT
+
+ODE number: 4
+
+$$
+ x \frac{d}{d x} y{\left (x \right )} - 2 y{\left (x \right )} = b x^{3} y^{2}{\left (x \right )} 
+$$
+
+Given solution:
+
+$$
+ y{\left (x \right )} = \frac{5 x^{2}}{C + x^{5}} 
+$$
+
+ is INCORRECT
+
+The correct one is:
+
+$$
+ y{\left (x \right )} = \frac{x^{2}}{C_{1} - \frac{b x^{5}}{5}} 
+$$
+
+ODE number: 5
+
+$$
+ \frac{d}{d x} y{\left (x \right )} = \left(9 x + y{\left (x \right )} - 1\right)^{2} 
+$$
+
+Given solution:
+
+$$
+ Y = - 9 x + 1 - 3 \tan{\left (3 C - 3 x \right )} 
+$$
+
+ is INCORRECT
+
+The correct one is:
+
+$$
+ y{\left (x \right )} = x + x^{2} \left(C_{1} - 1\right) + \frac{x^{3}}{3} \left(- 9 C_{1} + 100\right) + \frac{x^{4}}{24} \left(1015 C_{1} - 972\right) + \frac{5 x^{5}}{12} \left(- 27 C_{1} + 320\right) + C_{1} + \mathcal{O}\left(x^{6}\right) 
+$$
+
+ODE number: 6
+
+$$
+ \frac{d}{d x} y{\left (x \right )} = \left(9 x + y{\left (x \right )} - 1\right)^{2} 
+$$
+
+Solution:
+
+$$
+ y{\left (x \right )} = - 9 x + - \frac{3 \sin{\left (C - 3 x \right )}}{\cos{\left (C - 3 x \right )}} + 1 
+$$
+
+CORRECT
+
+\end{document}
