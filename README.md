@@ -15,4 +15,4 @@ How it works:
   8. If no errors occured, pdf file is made out of output tex file and default pdf viewer launched to show the pdf.
   
    
-  For an example of input file see "sample_input.tex" file in "test_input_files" directory.
+  For an example of input file see "sample_input.tex" file.
